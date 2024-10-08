@@ -1,0 +1,44 @@
+version: '2'
+services:
+  db:
+    image: postgres:16
+    container_name: postgres-container-sl-odoo
+    user: root
+    environment:
+      - POSTGRES_USER=odoo
+      - POSTGRES_PASSWORD=odoo18@2024
+      - POSTGRES_DB=postgres
+    restart: always
+    volumes:
+      - ./postgresql:/var/lib/postgresql/data
+
+  pgadmin:
+    image: dpage/pgadmin4
+    container_name: pgadmin4_container-sl-odoo
+    restart: always
+    ports:
+      - "8888:80"
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@gmail.com
+      PGADMIN_DEFAULT_PASSWORD: admin
+
+  odoo18:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: sl-odoo-18
+    depends_on:
+      - db
+    ports:
+      - "8069:8069"
+      - "20017:8072"  # live chat
+    tty: true
+    environment:
+      - HOST=postgres-container-sl-odoo
+      - USER=odoo
+      - PASSWORD=odoo18@2024
+    volumes:
+      - ./entrypoint.sh:/entrypoint.sh
+      - ./addons:/mnt/extra-addons
+      - ./etc:/etc/odoo
+    restart: always
